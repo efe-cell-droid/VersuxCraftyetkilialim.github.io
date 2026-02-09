@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yetkili Başvurusu | ZİOLANDCRAFT</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+
+    <!-- Simplified Navbar -->
+    <nav class="navbar scanned">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.png" alt="HyrixoCraft">
+                <span>HYRIXO<span class="highlight">CRAFT</span></span>
+            </a>
+            <div class="nav-actions">
+                <a href="index.html" class="btn btn-outline" style="font-size: 0.8rem;">İptal Et & Dön</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 120px; padding-bottom: 50px; display: flex; justify-content: center;">
+        <div class="auth-card" style="width: 100%; max-width: 800px;">
+            <div class="auth-header">
+                <h2>Yetkili Başvurusu</h2>
+                <p>Ekibimize katılmak için aşağıdaki formu eksiksiz doldur.</p>
+            </div>
+
+            <form id="apply-form">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>İsminiz</label>
+                        <div class="input-wrapper">
+                            <i class="ph ph-user"></i>
+                            <input type="text" id="name" placeholder="Adınız" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Yaşınız</label>
+                        <div class="input-wrapper">
+                            <i class="ph ph-calendar"></i>
+                            <input type="number" id="age" placeholder="Yaşınız" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Oyun İçi İsminiz</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-game-controller"></i>
+                        <input type="text" id="ign" placeholder="Minecraft Kullanıcı Adınız" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Discord Kullanıcı Adınız</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-discord-logo"></i>
+                        <input type="text" id="discord" placeholder="Örn: kullanici#1234 veya kullanici" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Sohbette birisi 5 kere spam attı, ne yaparsın?</label>
+                    <textarea id="q1" class="form-input" rows="3" placeholder="Cevabınız..." required
+                        style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 10px;"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Sohbette birisi ağır küfürler ediyor ama senden üstün bir yetkili, ne yaparsın?</label>
+                    <textarea id="q2" class="form-input" rows="3" placeholder="Cevabınız..." required
+                        style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 10px;"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Birisi Kurucuya hakaret ediyor, ne yaparsın?</label>
+                    <textarea id="q3" class="form-input" rows="3" placeholder="Cevabınız..." required
+                        style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 10px;"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Hangi rütbe boşsa ona verilceksiniz rankup olabilirsiniz.</label>
+                    <textarea id="q4" class="form-input" rows="3" placeholder="Cevabınız..." required
+                        style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 10px;"></textarea>
+                </div>
+
+                <button type="submit" class="auth-btn btn btn-primary">Başvuruyu Gönder</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/webhook.js"></script> <!-- NEW SYSTEM -->
+    <script>
+        // Check Auth
+        Auth.checkAuth();
+
+        document.getElementById('apply-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = document.querySelector('.auth-btn');
+            const originalText = btn.innerText;
+            btn.innerText = 'Gönderiliyor...';
+            btn.disabled = true;
+
+            const user = Auth.getSession();
+            const appData = {
+                username: user.username,
+                email: user.email,
+                realName: document.getElementById('name').value,
+                age: document.getElementById('age').value,
+                ign: document.getElementById('ign').value,
+                q1: document.getElementById('q1').value,
+                q2: document.getElementById('q2').value,
+                q3: document.getElementById('q3').value,
+                q4: document.getElementById('q4').value,
+
+                role: (user.role && user.role !== 'undefined') ? user.role : 'Oyuncu',
+                discord: document.getElementById('discord').value
+            };
+
+            // Extra Validation for Discord ID
+            if (!appData.discord || appData.discord.trim() === '') {
+                alert('Lütfen Discord kullanıcı adınızı giriniz! Size ulaşabilmemiz için bu zorunludur.');
+                btn.innerText = originalText;
+                btn.disabled = false;
+                return;
+            }
+
+            // USE NEW ISOLATED SYSTEM
+            const success = await DiscordWebhook.send(appData);
+
+            btn.innerText = originalText;
+            btn.disabled = false;
+
+            if (success) {
+                alert('Başvurunuz başarıyla alındı ve Yöneticilere iletildi! (Discord)');
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+
+</html>
